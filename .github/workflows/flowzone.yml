@@ -18,12 +18,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Use Node.js version 18
-      - name: Use Node.js version 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
       # Log in to Docker Hub (replace with the appropriate registry if using something else)
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -36,11 +30,21 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v2
 
-      # Build and push Docker image for multiple platforms
+      # Set up QEMU for multi-arch builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+
+      # Build and Push Docker Image using QEMU for multi-arch
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: .  # Path to the directory containing the Dockerfile (subfolder)
+          context: ./WG-Dash  # Path to the directory containing the Dockerfile (subfolder)
           push: true
           tags: noxcis/unbound:latest
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+          # Uncomment the following line if you want to disable caching (useful for debugging)
+          # no-cache: true
+
+      # Optional: add a post-build step for notifications or further checks (e.g., send a message on Slack)
