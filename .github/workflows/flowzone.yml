@@ -43,7 +43,7 @@ jobs:
         with:
           context: .  # Path to Dockerfile in repository
           push: true  # Push image after build
-          tags: noxcis/wg-dashboard:terra-firma  # Tag for all platforms
+          tags: noxcis/unbound:terra-firma  # Tag for all platforms
           platforms:  linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7  # Platforms to build for
           no-cache: true  # Disable caching to force a fresh build
           build-args: --progress=plain  # Show plain progress in logs
