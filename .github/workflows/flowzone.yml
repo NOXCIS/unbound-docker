@@ -48,7 +48,7 @@ jobs:
           push: true
           tags: |
             noxcis/unbound:latest
-            noxcis/unbound:${{ github.sha }}  # Add unique tag based on commit hash
+            noxcis/unbound:${{ github.sha }}  # Unique tag based on commit hash
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
     # Prevent the workflow from triggering itself
