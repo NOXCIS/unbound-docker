@@ -1,38 +1,49 @@
-name: Flowzone
+name: Build and Push Docker Image (Daily)
 
 on:
-  pull_request:
-    types: [opened, synchronize, closed]
-    branches: [main, master]
-  pull_request_target:
-    types: [opened, synchronize, closed]
-    branches: [main, master]
-  push:
-    tags:
-      - '*.*.*'
+  schedule:
+    - cron: "0 0 * * *"  # Daily at midnight (UTC)
+  workflow_dispatch:  # Allows manual triggering of the workflow
+    inputs:
+      trigger-build:
+        description: 'Trigger a manual build and push'
+        default: 'true'
 
 jobs:
-  flowzone:
-    name: Flowzone
-    uses: product-os/flowzone/.github/workflows/flowzone.yml@f10bb1ec88e9ffe4c2d6601bc3d44420e469282d # v17.4.50
-    # prevent duplicate workflow executions for pull_request and pull_request_target
-    if: |
-      (
-        github.event.pull_request.head.repo.full_name == github.repository &&
-        github.event_name == 'pull_request'
-      ) || (
-        github.event.pull_request.head.repo.full_name != github.repository &&
-        github.event_name == 'pull_request_target'
-      ) || (
-        github.event_name == 'push'
-      )
-    secrets:
-      FLOWZONE_TOKEN: ${{ secrets.FLOWZONE_TOKEN }}
-      DOCKERHUB_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKER_REGISTRY_PASS }}
-    with:
-      disable_versioning: true
-      docker_images: |
-        ghcr.io/klutchell/unbound,
-        klutchell/unbound
-      toggle_auto_merge: false
+  build_and_push_multiarch:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 42  # Job will timeout after 42 minutes
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js version 18
+      - name: Use Node.js version 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Step 3: Log in to Docker Hub using secrets
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Step 4: Set up Docker Buildx (for multi-platform support)
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 5: Build and Push Docker Image with multi-platform support (No cache)
+      - name: Build and Push Docker Image (Multi-Arch)
+        uses: docker/build-push-action@v4
+        with:
+          context: .  # Path to Dockerfile in repository
+          push: true  # Push image after build
+          tags: noxcis/wg-dashboard:terra-firma  # Tag for all platforms
+          platforms:  linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7  # Platforms to build for
+          no-cache: true  # Disable caching to force a fresh build
+          build-args: --progress=plain  # Show plain progress in logs
