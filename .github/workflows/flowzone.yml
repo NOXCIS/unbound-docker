@@ -2,7 +2,7 @@ name: Build and Push Docker Image (Daily)
 
 on:
   schedule:
-    - cron: "0 0 * * *"  # Schedule the workflow to run daily at midnight (UTC time). Adjust the time if needed.
+  - cron: "0 0 */2 * *"  # Schedule the workflow to run daily at midnight (UTC time). Adjust the time if needed.
   workflow_dispatch:  # Manual run trigger
     inputs:
       trigger-build:
