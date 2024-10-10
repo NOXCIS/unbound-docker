@@ -43,7 +43,7 @@ jobs:
           context: . # Path to the directory containing the Dockerfile (subfolder)
           push: true
           tags: noxcis/unbound:latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
           # Uncomment the following line if you want to disable caching (useful for debugging)
           # no-cache: true
 
